@@ -8,6 +8,50 @@ import removeAmpersand as rmA
 from datetime import datetime
 import re
 
+#getSeparator function
+#serves to detect whether a given filePath should be split by / or \, depending what system we're on
+#filePath parameter is teh filePath we will be splitting
+def getSeparator(filePath : str) -> str:
+
+    #check whether the forward slash is present in the filePath
+    if "/" in filePath:
+
+        #if it is, we're on a UNIX (sane) system
+        #set it up as separator to be used later
+        return "/"
+    
+    #otherwise
+    #I hope windows does not allow / in fileNames
+    else:
+
+        #otherwise we must be on a Windows (virus) system
+        #set \ up as a separator for later use
+        return "\\"
+
+#chooseOutputFolder function
+#uses askdirectory from fd to prompt the user to choose which folder they wish to save the result of the script into
+def chooseOutputFolder(label : tk.Label) -> None:
+
+    #get resultDirectory from globals
+    #we do this, since buttons are not able to return anything unfortunately
+    global resultDirectory
+
+    #try except statement to make sure if anything wrong happens, I raise an error
+    try:
+
+        #prompt the user to select a directory and catch the output in resultDirectory
+        resultDirectory = fd.askdirectory()
+
+        #lastly configure the passed label to make sure the user gets feedback on what happened
+        label.config(text = str(resultDirectory.split(getSeparator(resultDirectory))[-1]), fg = "green")
+
+    #if anything wrong happened during the execution of askdirectory
+    except:
+
+        #display an error letting the user know what happened
+        #dunno how a user could create this error, I hope they won't
+        displayError("Chyba při volbě složky pro výstup, zkuste to prosím znovu")
+
 #writeResult function to handle writing the results of XMLConfigs into files
 def writeResult(result):
 
@@ -213,24 +257,11 @@ def openXML(label : tk.Label) -> None:
         #after we're done with all that, close the file
         file.close()
 
-    #check whether the forward slash is present in the filePath
-    if "/" in filePath:
-
-        #if it is, we're on a UNIX (sane) system
-        #set it up as separator to be used later
-        separator = "/"
-
-    #otherwise
-    #I hope windows does not allow / in fileNames
-    else:
-
-        #otherwise we must be on a Windows (virus) system
-        #set \ up as a separator for later use
-        separator = "\\"
-
     #configure the passed label to make sure the user is notified of the file being loaded successfully
-    #it splits the filePath using the above defined separator and takes the last item from that list, making sure I only show the fileName, not the entire path
-    label.config(text = "Soubor " + str(filePath.split(separator)[-1]) + " úspěšně načten", fg = "green")
+    #it splits the filePath using using getSeparator to find which separator to use and takes the last item from that list, making sure I only show the fileName, not the entire path
+    label.config(text = "Soubor " + str(filePath.split(getSeparator(filePath))[-1]) + " úspěšně načten", fg = "green")
+
+resultDirectory = None
 
 #main function for all of this, check if it really is main here
 if __name__ == "__main__":
@@ -259,16 +290,27 @@ if __name__ == "__main__":
 
     #now we create the dropdown menu, the way we do this is by providing the selectedOption as the variable to hold info on which option was selected and a pointer to all the options
     dropDown = tk.OptionMenu(app, selectedOption, *options)
-    dropDown.grid(row = 1, column = 0, padx = padding, pady = padding)
+    dropDown.grid(row = 1, column = 0, padx = padding, pady = padding, sticky = "W")
 
     #doneLable represents the label next to the run button
     #it displays whether the xml has been successfuly processed or whether an error occured
     #default value is blank, since there is nothing to display yet
     doneLabel = tk.Label(text = "")
-    doneLabel.grid(row = 2, column = 1, padx = padding, pady = padding, sticky = "E")
+    doneLabel.grid(row = 3, column = 1, padx = padding, pady = padding, sticky = "E")
 
     #next we create the run button, which calls invoke script and lets the individual organisation scripts work their magic
     doneButton = ttk.Button(text = "Zpracovat XML", command = lambda: invokeScript(doneLabel))
-    doneButton.grid(row = 2, column = 0, padx = padding, pady = padding, sticky = "W")
+    doneButton.grid(row = 3, column = 0, padx = padding, pady = padding, sticky = "W")
+
+    #saveDirectoryLabel
+    #serves to show the user output on whether they have an outputDirectory selected
+    #default text tells the user no directory has been selected yet and is red, to make sure the user understands somethin is off
+    saveDicrectoryLabel = tk.Label(text = "Nebyla zvolena složka pro výsledek", fg = "red")
+    saveDicrectoryLabel.grid(row = 2, column = 1, padx = padding, pady = padding, sticky = "E")
+
+    #saveDirectoryButton
+    #lets the user pick a directory into which they wish to write the result of the script
+    saveDicrectoryButton = ttk.Button(text = "Zvolte složku pro uložení výsledného souboru", command = lambda: chooseOutputFolder(saveDicrectoryLabel))
+    saveDicrectoryButton.grid(row = 2, column = 0, padx = padding, pady = padding, sticky = "W")
 
     app.mainloop()
