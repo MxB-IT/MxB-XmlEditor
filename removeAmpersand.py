@@ -17,7 +17,7 @@ def removeAmpersands(chars):
         #if anything weird happens, return false, sending the caller into an error state
         except:
 
-            return False
+            return 1
 
     #if everything goes through fine, return True
-    return True
+    return 0

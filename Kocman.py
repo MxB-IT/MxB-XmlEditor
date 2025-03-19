@@ -23,7 +23,7 @@ def KocmanScript(eTree):
                 #if an error occurs during child deletion, return false, sending the caller into an error state
                 except:
 
-                    return False
+                    return 1
 
     #if everything went through ok, return True, let the caller move on
-    return True
+    return 0

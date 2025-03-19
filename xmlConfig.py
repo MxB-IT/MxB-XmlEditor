@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 import Kocman as K
 import removeAmpersand as rmA
 from datetime import datetime
+import re
 
 #writeResult function to handle writing the results of XMLConfigs into files
 def writeResult(result):
@@ -94,7 +95,7 @@ def displaySuccess():
 #invokeScript function
 #serves to invoke a certain script depending on which option was selected from the dropDown menu
 #so far each organisation has only 1 operation to perform, so we essentially only need to get that org's name and invoke the script belonging to that organisation
-def invokeScript():
+def invokeScript(label : tk.Label) -> None:
 
     #simple switch case to recognise which option was selected
     #currently works on comparing strings a dict could be more efficient
@@ -105,10 +106,10 @@ def invokeScript():
         case "Radomír Kocman":
 
             #each script within the org file returns a bool to determine whether it was performed successfully
-            if K.KocmanScript(root) == True:
+            if K.KocmanScript(root) == 0:
 
                 #if the script went through fine, we attempt a write
-                if writeResult(eTree) == True:
+                if writeResult(eTree) == 0:
                     
                     #if the write was successful we display a success window
                     displaySuccess()
@@ -116,12 +117,12 @@ def invokeScript():
                 #if the write was unsuccessfull, we display an error with the error message telling the user what happened
                 else:
 
-                    displayError("ERROR pri zapisu souboru")
+                    displayError("ERROR při zápisu souboru")
 
             #if the script was unsuccessfull, we display an error message telling the user what happened
             else:
 
-                displayError("ERROR pri provadeni skriptu")
+                displayError("ERROR při provádění skriptu")
 
         #if it's a valid org, get that org's script from imports (different files as modules, so there's no gigaMain)
         #and select which script from the org's file to use (for the future, if we ever need operation selections within orgs, we add another match case)
@@ -139,24 +140,27 @@ def invokeScript():
                 #if the write was unsuccessfull, we display an error with the error message telling the user what happened
                 else:
 
-                    displayError("ERROR pri zapisu souboru")
+                    displayError("ERROR při zápisu souboru")
 
             #if the script was unsuccessfull, we display an error message telling the user what happened
             else:
 
-                displayError("ERROR pri provadeni skriptu")
+                displayError("ERROR při provádění skriptu")
 
         #if we get an org name not within the orgs we know (using the throwaway '_' for that), we tell the user they didn't select an organisation
         case _:
 
             displayError("Nebyla zvolena žádná organizace!")
 
+    #configure the passed label to notify the user about the script succesfully exiting
+    label.config(text = "Změny úspěšně provedeny", fg = "green")
+
     #after all of that is done, return to caller (probably main)
     return
             
 #openXML function
 #takes no arguments, used to invoke a dialogue window, letting the user choose the location in their computer from which to open the xml file they wish to edit
-def openXML():
+def openXML(label : tk.Label) -> None:
 
     #define which file types we use
     #first var of the tuple defines the description of the file
@@ -209,23 +213,41 @@ def openXML():
         #after we're done with all that, close the file
         file.close()
 
-    #display a success message to the user, so they know something actually happened
-    fileLoaded = tk.Label(app, text = "Soubor uspesne nacten :)")
-    fileLoaded.pack()
+    #check whether the forward slash is present in the filePath
+    if "/" in filePath:
+
+        #if it is, we're on a UNIX (sane) system
+        #set it up as separator to be used later
+        separator = "/"
+
+    #otherwise
+    #I hope windows does not allow / in fileNames
+    else:
+
+        #otherwise we must be on a Windows (virus) system
+        #set \ up as a separator for later use
+        separator = "\\"
+
+    #configure the passed label to make sure the user is notified of the file being loaded successfully
+    #it splits the filePath using the above defined separator and takes the last item from that list, making sure I only show the fileName, not the entire path
+    label.config(text = "Soubor " + str(filePath.split(separator)[-1]) + " úspěšně načten", fg = "green")
 
 #main function for all of this, check if it really is main here
 if __name__ == "__main__":
 
+    #padding var serves to define how much padding there should be
+    padding = 5
+
     #create the tk app
     app = tk.Tk()
 
-    #set its geometry to something relatively regular
-    app.geometry("300x500")
+    loadXMLLabel = tk.Label(text = "Nebyl načten žádný xml soubor", fg = "red")
+    loadXMLLabel.grid(row = 0, column = 1, padx = padding, pady = padding, sticky = "E")
 
     #create the loadXML button, which calls openXML to parse or work with the file
     #since buttons in Tkinter cannot return anything, everything done by openXML is put into global variables (bad solution, need to find a better one)
-    loadXMLButton = ttk.Button(text = "Načíst XML", command = openXML)
-    loadXMLButton.pack()
+    loadXMLButton = ttk.Button(text = "Načíst XML", command = lambda: openXML(loadXMLLabel))
+    loadXMLButton.grid(row = 0, column = 0, padx = padding, pady = padding, sticky = "W")
 
     #this is the options list, comprised of strings representing the organisation names
     options = ["Radomír Kocman", "Evropa services Czech"]
@@ -237,10 +259,16 @@ if __name__ == "__main__":
 
     #now we create the dropdown menu, the way we do this is by providing the selectedOption as the variable to hold info on which option was selected and a pointer to all the options
     dropDown = tk.OptionMenu(app, selectedOption, *options)
-    dropDown.pack()
+    dropDown.grid(row = 1, column = 0, padx = padding, pady = padding)
+
+    #doneLable represents the label next to the run button
+    #it displays whether the xml has been successfuly processed or whether an error occured
+    #default value is blank, since there is nothing to display yet
+    doneLabel = tk.Label(text = "")
+    doneLabel.grid(row = 2, column = 1, padx = padding, pady = padding, sticky = "E")
 
     #next we create the run button, which calls invoke script and lets the individual organisation scripts work their magic
-    doneButton = ttk.Button(text = "Zpracovat XML", command = invokeScript)
-    doneButton.pack()
+    doneButton = ttk.Button(text = "Zpracovat XML", command = lambda: invokeScript(doneLabel))
+    doneButton.grid(row = 2, column = 0, padx = padding, pady = padding, sticky = "W")
 
     app.mainloop()
