@@ -105,7 +105,6 @@ def displayError(errorMsg : str, errorCode : int) -> None:
     #title it error and set its size to smaller
     errorWindow = tk.Toplevel(app)
     errorWindow.title = "Error"
-    errorWindow.geometry("200x200")
     
     #a label within the window, showing the passed error message to the user and pack this label
     label = tk.Label(errorWindow, text = errorMsg + "\nError Code: " + str(errorCode))
@@ -126,7 +125,6 @@ def displaySuccess() -> None:
     #title it success and set its size to be small
     successWindow = tk.Toplevel(app)
     successWindow.title = "Success"
-    successWindow.geometry("200x200")
     
     #a label to display a success message and pack it
     label = tk.Label(successWindow, text = "XML soubor úspěšně zpracován")
