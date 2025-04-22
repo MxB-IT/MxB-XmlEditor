@@ -6,7 +6,12 @@ import xml.etree.ElementTree as ET
 import Kocman as K
 import removeAmpersand as rmA
 from datetime import datetime
-import re
+from pathlib import Path
+
+#Globals
+resultDirectory = "."
+fileData = None
+root = None
 
 #getSeparator function
 #serves to detect whether a given filePath should be split by / or \, depending what system we're on
@@ -16,7 +21,7 @@ def getSeparator(filePath : str) -> str:
     #check whether the forward slash is present in the filePath
     if "/" in filePath:
 
-        #if it is, we're on a UNIX (sane) system
+        #if it is, we're on a UNIX system
         #set it up as separator to be used later
         return "/"
     
@@ -24,7 +29,7 @@ def getSeparator(filePath : str) -> str:
     #I hope windows does not allow / in fileNames
     else:
 
-        #otherwise we must be on a Windows (virus) system
+        #otherwise we must be on a Windows system
         #set \ up as a separator for later use
         return "\\"
 
@@ -43,17 +48,17 @@ def chooseOutputFolder(label : tk.Label) -> None:
         resultDirectory = fd.askdirectory()
 
         #lastly configure the passed label to make sure the user gets feedback on what happened
-        label.config(text = "Zvolená složka: " + str(resultDirectory.split(getSeparator(resultDirectory))[-1]), fg = "green")
+        label.config(text = f"Zvolená složka: {Path(resultDirectory).name}", fg = "green")
 
     #if anything wrong happened during the execution of askdirectory
-    except:
+    except Exception:
 
         #display an error letting the user know what happened
         #dunno how a user could create this error, I hope they won't
         displayError("Chyba při volbě složky pro výstup, zkuste to prosím znovu", 1)
 
 #writeResult function to handle writing the results of XMLConfigs into files
-def writeResult(result) -> None:
+def writeResult(result) -> int:
 
     global resultDirectory
 
@@ -75,7 +80,7 @@ def writeResult(result) -> None:
             file.write(result)
             file.close()
 
-            #return 0, we succesfully finished writing the result of our edit
+            #return 0, we successfully finished writing the result of our edit
             return 0
 
         #if an error was encountered while trying to write the file as raw text, input was a valid xml file we edited, meaning we can jump into except and write it via inbuilt functions
@@ -119,7 +124,7 @@ def displayError(errorMsg : str, errorCode : int) -> None:
 
 #displaySuccess function
 #takes no arguments, serves to give user feedback on an edit of an xml file succeeding
-def displaySuccess() -> None:
+def displaySuccess(changed_lines) -> None:
 
     #create a new window to display success, se it to appear on top of the original window
     #title it success and set its size to be small
@@ -127,11 +132,31 @@ def displaySuccess() -> None:
     successWindow.title = "Success"
     
     #a label to display a success message and pack it
-    label = tk.Label(successWindow, text = "XML soubor úspěšně zpracován")
+    label = tk.Label(successWindow, text = "XML soubor úspěšně zpracován\nUpraveny/odstraněny byly tyto řádky:")
     label.pack()
 
+    text_box_frame = ttk.Frame(successWindow)
+    text_box_frame.pack()
+
+    text_box = tk.Text(text_box_frame, height = 15, width = 80, wrap = "none")
+    text_box.grid(row = 0, column = 0, sticky = "nsew")
+
+    scrollbar_y = ttk.Scrollbar(text_box_frame, orient = "vertical", command = text_box.yview)
+    scrollbar_y.grid(row = 0, column = 1, sticky = "ns")
+
+    scrollbar_x = ttk.Scrollbar(text_box_frame, orient = "horizontal", command = text_box.xview)
+    scrollbar_x.grid(row = 1, column = 0, sticky = "ew")
+
+    text_box.configure(yscrollcommand = scrollbar_y.set, xscrollcommand = scrollbar_x.set)
+
+    for i in changed_lines:
+
+        text_box.insert(tk.END, f"{i}\n")
+
+    text_box.config(state = "disabled")
+
     #successButton to simply close the window
-    successButton = ttk.Button(successWindow, text = "Hurá", command = successWindow.destroy)
+    successButton = ttk.Button(successWindow, text = "OK", command = successWindow.destroy)
     successButton.pack()
 
     #return back to caller
@@ -163,16 +188,18 @@ def invokeScript(label : tk.Label) -> None:
                 #and return to prevent any errors
                 return
 
+            result = K.KocmanScript(root)
+
             #each script within the org file returns a bool to determine whether it was performed successfully
-            if K.KocmanScript(root) == 0:
+            if result[0] == 0:
 
                 #if the script went through fine, we attempt a write
                 if writeResult(fileData) == 0:
                     
                     #if the write was successful we display a success window
-                    displaySuccess()
+                    displaySuccess(result[1])
 
-                    #configure the passed label to notify the user about the script succesfully exiting
+                    #configure the passed label to notify the user about the script successfully exiting
                     label.config(text = "Změny úspěšně provedeny", fg = "green")
 
                 #if the write was unsuccessfull, we display an error with the error message telling the user what happened
@@ -184,7 +211,7 @@ def invokeScript(label : tk.Label) -> None:
                     #configure the passed label to notify the user about the fileWrite erroring out
                     label.config(text = "Chyba při zápisu výsledného souboru", fg = "red")
 
-            #if the script was unsuccessfull, we display an error message telling the user what happened
+            #if the script was unsuccessful, we display an error message telling the user what happened
             else:
 
                 #display an error, letting the user know something wrong happened
@@ -210,20 +237,24 @@ def invokeScript(label : tk.Label) -> None:
                 #return in order to not run anything else and avoid doing anything in the script, since the data are not correctly formatted
                 return
 
+            #the function returns a tuple of (success value, changedLines)
+            result = rmA.removeAmpersands(fileData)
+
             #each script within the org file returns an int to determine whether it was performed successfully, 0 for success, other values for errors
-            if rmA.removeAmpersands(fileData) == 0:
+            if result[0] == 0:
 
                 #if the script went through fine, we attempt a write
                 #write function returns an int to determine success as well, 0 for success, other for errors
                 if writeResult(fileData) == 0:
 
                     #if the write was successful we display a success window
-                    displaySuccess()
+                    #takes changed_lines as an argument to display them as feedback to the user
+                    displaySuccess(result[1])
 
-                    #configure the passed label to notify the user about the script succesfully exiting
+                    #configure the passed label to notify the user about the script successfully exiting
                     label.config(text = "Změny úspěšně provedeny", fg = "green")
 
-                #if the write was unsuccessfull, we display an error with the error message telling the user what happened
+                #if the write was unsuccessful, we display an error with the error message telling the user what happened
                 else:
 
                     displayError("ERROR při zápisu souboru", 22)
@@ -231,7 +262,7 @@ def invokeScript(label : tk.Label) -> None:
                     #configure the passed label to notify the user about the fileWrite erroring out
                     label.config(text = "Chyba při zápisu výsledného souboru", fg = "red")
 
-            #if the script was unsuccessfull, we display an error message telling the user what happened
+            #if the script was unsuccessful, we display an error message telling the user what happened
             else:
 
                 displayError("ERROR při provádění skriptu", 32)
@@ -280,7 +311,7 @@ def openXML(label : tk.Label) -> None:
 
         #create another global variable, root, to contain the root of the generated eTree
         global root
-        
+
         #eTree.getroot() to get the fileData's root
         root = fileData.getroot()
 
@@ -310,12 +341,6 @@ def openXML(label : tk.Label) -> None:
     #configure the passed label to make sure the user is notified of the file being loaded successfully
     #it splits the filePath using using getSeparator to find which separator to use and takes the last item from that list, making sure I only show the fileName, not the entire path
     label.config(text = "Soubor " + str(filePath.split(getSeparator(filePath))[-1]) + " úspěšně načten", fg = "green")
-
-#setting resultDirectory to . to make sure if the user selects no output directory, the result will be save in the same dir where the scirpt is
-resultDirectory = "."
-
-#setting chars to None to avoid errors from non-defined vars
-fileData = None
 
 #main function for all of this, check if it really is main here
 if __name__ == "__main__":

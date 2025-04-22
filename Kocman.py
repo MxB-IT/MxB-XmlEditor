@@ -1,6 +1,10 @@
+import xml.etree.ElementTree as ET
+
 #KocmanScript for Radomir Kocman org
 #returns a bool to determine whether the caller goes into an error state or not
 def KocmanScript(eTree):
+
+    removed_elements = []
 
     #since we are removing certain elements in this function from an xml we know is alright, we automatically use the etree extension
     #we iterate through all the eTree elements
@@ -15,15 +19,17 @@ def KocmanScript(eTree):
                 #if it does, we set up a try except, to detect error states
                 try:
 
-                    #we attempt to clear the child, making sure all of its children and whatnot are gone
+                    removed_xml = ET.tostring(child, encoding="unicode").strip()
+                    removed_elements.append((element.tag, child.tag, removed_xml))
+
+                    #clear and remove the child
                     child.clear()
-                    #after that, we remove the child itself
                     element.remove(child)
 
                 #if an error occurs during child deletion, return false, sending the caller into an error state
-                except:
+                except Exception:
 
                     return 1
 
     #if everything went through ok, return True, let the caller move on
-    return 0
+    return 0, removed_elements

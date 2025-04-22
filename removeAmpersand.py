@@ -2,22 +2,27 @@
 #returns a bool to determine whether the caller goes into an error state or not
 def removeAmpersands(chars):
 
-    #since the file we're editing HAS to be corrupted, since it contains ampersands without escape sequences, we automatically go through an array of all the chars that was passed to this function
-    for i in range(len(chars)):
+    try:
+        text = ''.join(chars)
 
-        #with each character, set up a try except, in case anything weird happens, to that we catch all errors
-        try:
+        lines = text.splitlines(keepends = True)
+        changed_lines = []
 
-            #if the character is an ampersand
-            if chars[i] == "&":
+        for i, line in enumerate(lines):
 
-                #replace it with a + sign (yes, they do not want the excape sequence ampersand, I have asked before)
-                chars[i] = "+"
-        
-        #if anything weird happens, return false, sending the caller into an error state
-        except:
+            if "&" in line:
 
-            return 1
+                lines[i] = line.replace("&", "+")
+                changed_lines.append(line)
 
-    #if everything goes through fine, return True
-    return 0
+        updated_text = ''.join(lines)
+        chars.clear()
+        chars.extend(updated_text)
+
+        #if everything goes through fine, return True
+        return 0, changed_lines
+
+    #if anything weird happens, return false, sending the caller into an error state
+    except Exception:
+
+        return 1
