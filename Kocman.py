@@ -1,14 +1,18 @@
 import xml.etree.ElementTree as ET
 
-#KocmanScript for Radomir Kocman org
-#returns a bool to determine whether the caller goes into an error state or not
-def KocmanScript(eTree):
+def kocman_script(e_tree : ET.ElementTree) -> int or (int, list):
+    """
+    removes the elements needed to be removed for the Kocman org specifically
+    :param e_tree: element tree representation of the input xml file
+    :return: int, representing either success or failure
+    :return: (int, list) tuple, int representing success and the list containing all the changed elements
+    """
 
     removed_elements = []
 
     #since we are removing certain elements in this function from an xml we know is alright, we automatically use the etree extension
     #we iterate through all the eTree elements
-    for element in eTree.iter():
+    for element in e_tree.iter():
 
         #for each child of an element
         for child in element:
