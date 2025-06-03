@@ -1,4 +1,5 @@
 import os
+import threading
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog as fd
@@ -7,6 +8,7 @@ import Kocman as K
 import removeAmpersand as rmA
 from datetime import datetime
 from pathlib import Path
+from threading import *
 
 #Globals
 resultDirectory = "."
@@ -356,6 +358,15 @@ def open_xml(label : tk.Label) -> None:
     #it splits the file_path using getSeparator to find which separator to use and takes the last item from that list, making sure I only show the fileName, not the entire path
     label.config(text = "Soubor " + str(file_path.split(get_separator(file_path))[-1]) + " úspěšně načten", fg ="green")
 
+def threaded_invoke_script(label : tk.Label) -> None:
+    """
+    exists solely to invoke script in a thread so the UI does not freeze in case of a huge workload
+    :param label: label to be edited, informing the user about the outcome
+    :return: None
+    """
+    thread = threading.Thread(target = invoke_script, args = (label,))
+    thread.start()
+
 #main function for all of this, check if it really is main here
 if __name__ == "__main__":
 
@@ -392,7 +403,7 @@ if __name__ == "__main__":
     done_label.grid(row = 3, column = 1, padx = padding, pady = padding, sticky ="E")
 
     #next we create the run button, which calls invoke script and lets the individual organisation scripts work their magic
-    done_button = ttk.Button(text ="Zpracovat XML", command = lambda: invoke_script(done_label))
+    done_button = ttk.Button(text ="Zpracovat XML", command = lambda: threaded_invoke_script(done_label))
     done_button.grid(row = 3, column = 0, padx = padding, pady = padding, sticky ="W")
 
     #saveDirectoryLabel
