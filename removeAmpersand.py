@@ -2,7 +2,6 @@ def remove_ampersands(chars : list) -> int or (int, list):
     """
     removes all raw ampersands within the xml file
     :param chars: file contents in a list containing each char as a single string
-    :return: int representing success or failure
     :return: (int, list) tuple, int representing success and the list containing all the changed lines
     """
 
