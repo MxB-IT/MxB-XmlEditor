@@ -1,4 +1,3 @@
-import os
 import threading
 import tkinter as tk
 from tkinter import ttk
@@ -8,10 +7,10 @@ import Kocman as K
 import removeAmpersand as rmA
 from datetime import datetime
 from pathlib import Path
-from threading import *
+from customtkinter import *
 
 #Globals
-resultDirectory = "."
+result_directory = "."
 file_data = None
 root = None
 
@@ -33,7 +32,7 @@ def get_separator(file_path : str) -> str:
         #set \ up as a separator for later use
         return "\\"
 
-def choose_output_folder(label : tk.Label) -> None:
+def choose_output_folder(label : CTkLabel) -> None:
     """
     handles the output folder selection
     :param label: label to be edited with the output filepath
@@ -41,16 +40,16 @@ def choose_output_folder(label : tk.Label) -> None:
     """
     #get resultDirectory from globals
     #we do this, since buttons are not able to return anything unfortunately
-    global resultDirectory
+    global result_directory
 
     #try except statement to make sure if anything wrong happens, I raise an error
     try:
 
         #prompt the user to select a directory and catch the output in resultDirectory
-        resultDirectory = fd.askdirectory()
+        result_directory = fd.askdirectory()
 
         #lastly configure the passed label to make sure the user gets feedback on what happened
-        label.config(text = f"Zvolená složka: {Path(resultDirectory).name}", fg = "green")
+        label.configure(text = f"Zvolená složka: {str(result_directory.split(get_separator(result_directory))[-1])}", text_color ="green")
 
     #if anything wrong happened during the execution of askdirectory
     except Exception:
@@ -66,7 +65,7 @@ def write_result(result : any) -> int:
     :return: int signifying success or failure
     """
 
-    global resultDirectory
+    global result_directory
 
     #try attempting to write the file itself, if an error occurs, will jump to except, returning false, sending parent function into an error state, generating an error dialogue
     try:
@@ -76,7 +75,7 @@ def write_result(result : any) -> int:
 
             #creating a new file following this naming convention
             #get the organisation this was performed for (option selected from dropDown menu) + -FV- + get month-year from datetime and end with .xml extension
-            file = open(resultDirectory + get_separator(resultDirectory) + selected_option.get() + "-FV-" + datetime.today().strftime('%m-%Y') + ".xml", "w", encoding ="utf-8")
+            file = open(result_directory + get_separator(result_directory) + selected_option.get() + "-FV-" + datetime.today().strftime('%m-%Y') + ".xml", "w", encoding ="utf-8")
 
             #join it to an empty string, just to stringify it back together, since it is a python abomination of a bajillion strings strewn together (because python does not know what a char is)
             #We'll never be modifying regular, workable xml files as raw text anyway, they were probably broken in some way, so this should be fine (will fix if it is not later on)
@@ -96,7 +95,7 @@ def write_result(result : any) -> int:
             #naming convention follows this
             #get the organisation this was performed for (option selected from dropDown menu) + -FV- + get month-year from datetime and end with .xml extension
             #using getSeparator function to make sure the resultDirectory and fileName are separated using the correct system separator
-            result.write(resultDirectory + get_separator(resultDirectory) + selected_option.get() + "-FV-" + datetime.today().strftime('%m-%Y') + ".xml", encoding ="utf-8")
+            result.write(result_directory + get_separator(result_directory) + selected_option.get() + "-FV-" + datetime.today().strftime('%m-%Y') + ".xml", encoding ="utf-8")
 
             #writing was succesful, return 0
             return 0
@@ -173,10 +172,11 @@ def display_success(changed_lines) -> None:
     #return back to caller
     return
 
-def invoke_script(label : tk.Label) -> None:
+def invoke_script(label : CTkLabel, progressbar : CTkProgressBar) -> None:
     """
     handles the underlying script execution, calling the correct one and handing over the correct params
     :param label: label to be edited to let the user know what is happening
+    :param progressbar: widget displaying the progress bar
     :return: None
     """
 
@@ -196,7 +196,7 @@ def invoke_script(label : tk.Label) -> None:
                 display_error("ERROR při provádění skriptu, zkontrolujte, že jste načetli správný soubor a zvolili odpovídající organizaci prosím", 11)
 
                 #configure the label to let the user know something wrong happened
-                label.config(text = "Chyba při provádění skriptu", fg = "red")
+                label.configure(text = "Chyba při provádění skriptu", text_color = "red")
 
                 #and return to prevent any errors
                 return
@@ -213,7 +213,7 @@ def invoke_script(label : tk.Label) -> None:
                     display_success(result[1])
 
                     #configure the passed label to notify the user about the script successfully exiting
-                    label.config(text = "Změny úspěšně provedeny", fg = "green")
+                    label.configure(text = "Změny úspěšně provedeny", text_color = "green")
 
                 #if the write was unsuccessfull, we display an error with the error message telling the user what happened
                 else:
@@ -222,7 +222,7 @@ def invoke_script(label : tk.Label) -> None:
                     display_error("ERROR při zápisu souboru", 21)
 
                     #configure the passed label to notify the user about the fileWrite erroring out
-                    label.config(text = "Chyba při zápisu výsledného souboru", fg = "red")
+                    label.configure(text = "Chyba při zápisu výsledného souboru", text_color = "red")
 
             #if the script was unsuccessful, we display an error message telling the user what happened
             else:
@@ -231,7 +231,7 @@ def invoke_script(label : tk.Label) -> None:
                 display_error("ERROR při provádění skriptu", 31)
 
                 #configure the passed label to notify the user about the script erroring out
-                label.config(text = "Chyba při provádění skriptu", fg = "red")
+                label.configure(text = "Chyba při provádění skriptu", text_color = "red")
 
         #if it's a valid org, get that org's script from imports (different files as modules, so there's no gigaMain)
         #and select which script from the org's file to use (for the future, if we ever need operation selections within orgs, we add another match case)
@@ -245,7 +245,7 @@ def invoke_script(label : tk.Label) -> None:
                 display_error("ERROR při provádění skriptu, zkontrolujte, že jste načetli správný soubor a zvolili odpovídající organizaci prosím", 12)
 
                 #configure the label to let the user know something wrong happened
-                label.config(text = "Chyba při provádění skriptu", fg = "red")
+                label.configure(text = "Chyba při provádění skriptu", text_color = "red")
 
                 #return in order to not run anything else and avoid doing anything in the script, since the data are not correctly formatted
                 return
@@ -265,7 +265,7 @@ def invoke_script(label : tk.Label) -> None:
                     display_success(result[1])
 
                     #configure the passed label to notify the user about the script successfully exiting
-                    label.config(text = "Změny úspěšně provedeny", fg = "green")
+                    label.configure(text = "Změny úspěšně provedeny", text_color = "green")
 
                 #if the write was unsuccessful, we display an error with the error message telling the user what happened
                 else:
@@ -273,7 +273,7 @@ def invoke_script(label : tk.Label) -> None:
                     display_error("ERROR při zápisu souboru", 22)
 
                     #configure the passed label to notify the user about the fileWrite erroring out
-                    label.config(text = "Chyba při zápisu výsledného souboru", fg = "red")
+                    label.configure(text = "Chyba při zápisu výsledného souboru", text_color = "red")
 
             #if the script was unsuccessful, we display an error message telling the user what happened
             else:
@@ -281,17 +281,20 @@ def invoke_script(label : tk.Label) -> None:
                 display_error("ERROR při provádění skriptu", 32)
 
                 #configure the passed label to notify the user about the script erroring out
-                label.config(text = "Chyba při provádění skriptu", fg = "red")
+                label.configure(text = "Chyba při provádění skriptu", text_color = "red")
 
         #if we get an org name not within the orgs we know (using the throwaway '_' for that), we tell the user they didn't select an organisation
         case _:
 
             display_error("Nebyla zvolena žádná organizace!", 2)
 
+    progressbar.stop()
+    progressbar.grid_forget()
+
     #after all of that is done, return to caller (probably main)
     return
 
-def open_xml(label : tk.Label) -> None:
+def open_xml(label : CTkLabel) -> None:
     """
     handles the user choice of input, letting the user open an xml file they wish to edit
     :param label: label to be edited, informing the user about the outcome
@@ -319,53 +322,64 @@ def open_xml(label : tk.Label) -> None:
     #I do this to make sure the script always keeps only 1 file loaded
     global file_data
 
-    #next, try to open the file with xml.etree since it should be a valid xml file, which we should be able to generate a tree from
     try:
 
-        #set fileData as the parsed file located at file_path picked by the user
-        file_data = ET.parse(file_path)
+        #next, try to open the file with xml.etree since it should be a valid xml file, which we should be able to generate a tree from
+        try:
 
-        #create another global variable, root, to contain the root of the generated eTree
-        global root
+            #set fileData as the parsed file located at file_path picked by the user
+            file_data = ET.parse(file_path)
 
-        #eTree.getroot() to get the fileData's root
-        root = file_data.getroot()
+            #create another global variable, root, to contain the root of the generated eTree
+            global root
 
-    #if parsing the file as an xml file fails, we're working with a corrupted xml file and our job is to probably fix it
-    except:
+            #eTree.getroot() to get the fileData's root
+            root = file_data.getroot()
 
-        #open the file in readMode
-        file = open(file_path, "r", encoding = "utf-8")
+        #if parsing the file as an xml file fails, we're working with a corrupted xml file and our job is to probably fix it
+        except:
 
-        #set chars as an empty field
-        file_data = []
+            #open the file in readMode
+            file = open(file_path, "r", encoding = "utf-8")
 
-        #now read the file line by line
-        for line in file:
+            #set chars as an empty field
+            file_data = []
 
-            #reading each character within that line (don't get fooled, python still does not know what a char is)
-            #not sure about variable type of char here, probably still string or a list, if you want to do anything with it treat it as such
-            for char in line:
+            #now read the file line by line
+            for line in file:
 
-                #append the char to chars
-                #what this does is instead of giving us a string which we can't exactly sift through as easily, it gives us an array of individual characters to scan, allowing us to make any changes we wish
-                file_data.append(char)
+                #reading each character within that line (don't get fooled, python still does not know what a char is)
+                #not sure about variable type of char here, probably still string or a list, if you want to do anything with it treat it as such
+                for char in line:
 
-        #after we're done with all that, close the file
-        file.close()
+                    #append the char to chars
+                    #what this does is instead of giving us a string which we can't exactly sift through as easily, it gives us an array of individual characters to scan, allowing us to make any changes we wish
+                    file_data.append(char)
+
+            #after we're done with all that, close the file
+            file.close()
+
+    except FileNotFoundError:
+        return
 
     #configure the passed label to make sure the user is notified of the file being loaded successfully
     #it splits the file_path using getSeparator to find which separator to use and takes the last item from that list, making sure I only show the fileName, not the entire path
-    label.config(text = "Soubor " + str(file_path.split(get_separator(file_path))[-1]) + " úspěšně načten", fg ="green")
+    label.configure(text = "Soubor " + str(file_path.split(get_separator(file_path))[-1]) + " úspěšně načten", text_color ="green")
 
-def threaded_invoke_script(label : tk.Label) -> None:
+def threaded_invoke_script(label : CTkLabel) -> None:
     """
     exists solely to invoke script in a thread so the UI does not freeze in case of a huge workload
     :param label: label to be edited, informing the user about the outcome
     :return: None
     """
-    thread = threading.Thread(target = invoke_script, args = (label,))
-    thread.start()
+
+    progressbar = CTkProgressBar(master = app, mode = "indeterminate")
+    progressbar.grid(row = 3, column = 1)
+    progressbar_thread = threading.Thread(target = CTkProgressBar.start, args = (progressbar,))
+    progressbar_thread.start()
+
+    script_thread = threading.Thread(target=invoke_script, args=(label, progressbar))
+    script_thread.start()
 
 #main function for all of this, check if it really is main here
 if __name__ == "__main__":
@@ -373,48 +387,45 @@ if __name__ == "__main__":
     #padding var serves to define how much padding there should be
     padding = 5
 
-    #create the tk app
-    app = tk.Tk()
+    #create the ctk app
+    app = CTk()
 
-    load_xml_label = tk.Label(text ="Nebyl načten žádný xml soubor", fg ="red")
+    load_xml_label = CTkLabel(master = app, text ="Nebyl načten žádný xml soubor", text_color ="red")
     load_xml_label.grid(row = 0, column = 1, padx = padding, pady = padding, sticky ="E")
 
     #create the loadXML button, which calls openXML to parse or work with the file
     #since buttons in Tkinter cannot return anything, everything done by openXML is put into global variables (bad solution, need to find a better one)
-    load_xml_button = ttk.Button(text ="Načíst XML", command = lambda: open_xml(load_xml_label))
+    load_xml_button = CTkButton(master = app, text ="Načíst XML", command = lambda: open_xml(load_xml_label))
     load_xml_button.grid(row = 0, column = 0, padx = padding, pady = padding, sticky ="W")
-
-    #this is the options list, comprised of strings representing the organisation names
-    options = ["Radomír Kocman", "Evropa services Czech"]
 
     #selectedOption var, used for determining which option was selected (simple as that)
     #default value set to "Vyberte organizace" so the user knows what to do with this
-    selected_option = tk.StringVar()
-    selected_option.set("Vyberte organizaci")
+    selected_option = tk.StringVar(value = "Vyberte organizaci")
 
     #now we create the dropdown menu, the way we do this is by providing the selectedOption as the variable to hold info on which option was selected and a pointer to all the options
-    drop_down = tk.OptionMenu(app, selected_option, *options)
+    drop_down = CTkOptionMenu(master = app, variable =  selected_option,values = ["Radomír Kocman", "Evropa services Czech"])
     drop_down.grid(row = 1, column = 0, padx = padding, pady = padding, sticky ="W")
 
     #doneLable represents the label next to the run button
     #it displays whether the xml has been successfuly processed or whether an error occured
     #default value is blank, since there is nothing to display yet
-    done_label = tk.Label(text ="")
+    done_label = CTkLabel(master = app, text ="")
     done_label.grid(row = 3, column = 1, padx = padding, pady = padding, sticky ="E")
 
     #next we create the run button, which calls invoke script and lets the individual organisation scripts work their magic
-    done_button = ttk.Button(text ="Zpracovat XML", command = lambda: threaded_invoke_script(done_label))
+    done_button = CTkButton(master = app, text ="Zpracovat XML", command = lambda: threaded_invoke_script(done_label))
     done_button.grid(row = 3, column = 0, padx = padding, pady = padding, sticky ="W")
 
     #saveDirectoryLabel
     #serves to show the user output on whether they have an outputDirectory selected
     #default text tells the user no directory has been selected yet and is red, to make sure the user understands somethin is off
-    save_directory_label = tk.Label(text ="Nebyla zvolena složka pro výsledek", fg ="red")
+    save_directory_label = CTkLabel(master = app, text ="Nebyla zvolena složka pro výsledek", text_color ="red")
     save_directory_label.grid(row = 2, column = 1, padx = padding, pady = padding, sticky ="E")
 
     #saveDirectoryButton
     #lets the user pick a directory into which they wish to write the result of the script
-    save_directory_button = ttk.Button(text ="Zvolte složku pro uložení výsledného souboru", command = lambda: choose_output_folder(save_directory_label))
+    save_directory_button = CTkButton(master = app, text ="Zvolte složku pro uložení výsledného souboru",
+                                      command = lambda: choose_output_folder(save_directory_label))
     save_directory_button.grid(row = 2, column = 0, padx = padding, pady = padding, sticky ="W")
 
     #run the app mainloop
