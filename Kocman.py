@@ -32,7 +32,7 @@ def kocman_script(e_tree : ET.ElementTree) -> int or (int, list):
                 #if an error occurs during child deletion, return false, sending the caller into an error state
                 except Exception:
 
-                    return 1
+                    return 1, removed_elements
 
     #if everything went through ok, return True, let the caller move on
     return 0, removed_elements

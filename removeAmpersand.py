@@ -5,11 +5,11 @@ def remove_ampersands(chars : list) -> int or (int, list):
     :return: (int, list) tuple, int representing success and the list containing all the changed lines
     """
 
+    changed_lines = []
     try:
         text = ''.join(chars)
 
         lines = text.splitlines(keepends = True)
-        changed_lines = []
 
         for i, line in enumerate(lines):
 
@@ -28,4 +28,4 @@ def remove_ampersands(chars : list) -> int or (int, list):
     #if anything weird happens, return false, sending the caller into an error state
     except Exception:
 
-        return 1
+        return 1, changed_lines
