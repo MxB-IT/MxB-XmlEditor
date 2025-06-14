@@ -131,7 +131,12 @@ class XmlConfig(CTk):
         :return: None
         """
         try:
-            self.output_directory = filedialog.askdirectory(initialdir=os.getcwd())
+            output_directory = filedialog.askdirectory(initialdir=os.getcwd())
+
+            if output_directory == "":
+                return
+
+            self.output_directory = output_directory
             self.output_directory_widgets[1].configure(text=f"Složka pro uložení výsledného souboru: {str(self.output_directory.split(self.get_separator(self.output_directory))[-1])}",
                                                        text_color="green")
 
@@ -141,6 +146,11 @@ class XmlConfig(CTk):
             return
 
     def threaded_invocation(self):
+        if self.output_directory is None:
+            ErrorHandler(error_message="Nebyla zvolena složka pro výstup",
+                         error_code=3).focus()
+            return
+
         self.invoker[1].configure(text="")
         self.update_idletasks()
         self.progressbar.grid(row=self.invoker[1].grid_info()['row'],
