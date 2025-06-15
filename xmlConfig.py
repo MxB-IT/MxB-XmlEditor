@@ -1,3 +1,4 @@
+import os
 import threading
 from datetime import *
 
@@ -16,7 +17,7 @@ class XmlConfig(CTk):
         super().__init__()
 
         self.file_data = None
-        self.output_directory = None
+        self.output_directory = os.getcwd()
 
         self.title("XML Config")
         self.frame = FrameBase(master=self)
@@ -40,8 +41,7 @@ class XmlConfig(CTk):
                                                     command=self.choose_output_folder,
                                                     text="Zvolit složku pro uložení výsledného souboru"),
                                          LabelBase(master=self.frame,
-                                         text = "Nebyla zvolena složka pro výsledek",
-                                         text_color="red"))
+                                                   text=f"Složka pro uložení výsledného souboru: {str(self.output_directory.split(self.get_separator(self.output_directory))[-1])}"))
         self.widgets.append(self.output_directory_widgets)
         self.invoker = (ButtonBase(master=self.frame,
                                    command=self.threaded_invocation,
@@ -107,7 +107,7 @@ class XmlConfig(CTk):
 
         except FileNotFoundError:
             ErrorHandler(error_message="Chyba při načítání vstupního souboru",
-                         error_code=3)
+                         error_code=3).lift()
             return
 
         self.load_xml[1].configure(text = f"Soubor {str(file_path.split(self.get_separator(file_path))[-1])} úspěšně načten",
@@ -142,13 +142,13 @@ class XmlConfig(CTk):
 
         except FileNotFoundError:
             ErrorHandler(error_message="Chyba při načítání výstupní složky",
-                         error_code=2)
+                         error_code=2).lift()
             return
 
     def threaded_invocation(self):
         if self.output_directory is None:
             ErrorHandler(error_message="Nebyla zvolena složka pro výstup",
-                         error_code=3).focus()
+                         error_code=3).lift()
             return
 
         self.invoker[1].configure(text="")
@@ -168,7 +168,7 @@ class XmlConfig(CTk):
                 if type(self.file_data) is not ElementTree.ElementTree:
                     ErrorHandler(master=self,
                                  error_message="Chyba při provádění skriptu, zkontrolujte, že jste načetli správný soubor a zvolili správnou organizaci",
-                                 error_code=4).focus()
+                                 error_code=4).lift()
                     self.invoker[1].configure(text="Chyba při provádění skriptu",
                                               text_color="red")
                     self.progressbar.stop()
@@ -177,20 +177,20 @@ class XmlConfig(CTk):
                 result = kocman_script(self.file_data.getroot())
                 if result[0] == 0:
                     if self.write_result(self.file_data) == 0:
-                        SuccessHandler(result[1]).focus()
+                        SuccessHandler(result[1]).lift()
                         self.invoker[1].configure(text="Změny úspěšně provedeny",
                                                   text_color = "green")
                 else:
                     ErrorHandler(master=self,
                                  error_message="Chyba při zápisu souboru",
-                                 error_code=22).focus()
+                                 error_code=22).lift()
                     self.invoker[1].configure(text="Chyba při zápisu souboru",
                                               text_color="red")
             case "Evropa services Czech":
                 if type(self.file_data) is not list:
                     ErrorHandler(master=self,
                                  error_message="Chyba při provádění skriptu, zkontrolujte, že jste načetli správný soubor a zvolili správnou organizaci",
-                                 error_code=4).focus()
+                                 error_code=4).lift()
                     self.invoker[1].configure(text="Chyba při provádění skriptu",
                                               text_color="red")
                     self.progressbar.stop()
@@ -199,19 +199,19 @@ class XmlConfig(CTk):
                 result=remove_ampersands(self.file_data)
                 if result[0] == 0:
                     if self.write_result(self.file_data) == 0:
-                        SuccessHandler(result[1]).focus()
+                        SuccessHandler(result[1]).lift()
                         self.invoker[1].configure(text="Změny úspěšně provedeny",
                                                   text_color="green")
                     else:
                         ErrorHandler(master=self,
                                      error_message="Chyba při zápisu souboru",
-                                     error_code=22).focus()
+                                     error_code=22).lift()
                         self.invoker[1].configure(text="Chyba při provádění skriptu",
                                                   text_color="red")
             case _:
                 ErrorHandler(master=self,
                              error_message="Nebyla zvolena žádná organizace!",
-                             error_code=2).focus()
+                             error_code=2).lift()
                 self.progressbar.stop()
                 self.progressbar.grid_forget()
 
