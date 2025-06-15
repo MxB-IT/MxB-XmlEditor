@@ -16,6 +16,9 @@ class XmlConfig(CTk):
     def __init__(self):
         super().__init__()
 
+        org_options = ["Evropa services Czech",
+                       "Radomír Kocman"]
+
         self.file_data = None
         self.output_directory = os.getcwd()
 
@@ -32,10 +35,10 @@ class XmlConfig(CTk):
                                    text_color ="red"))
         self.widgets.append(self.load_xml)
         self.drop_down = (ComboBoxBase(master=self.frame,
-                                       values=["Evropa services Czech",
-                                                "Radomír Kocman"]),
+                                       values=org_options),
                           LabelBase(master=self.frame,
                                     text=""))
+        self.drop_down[0].configure(width=self.drop_down[0].cget('font').measure(self.get_longest(org_options)) + 45)
         self.widgets.append(self.drop_down)
         self.output_directory_widgets = (ButtonBase(master=self.frame,
                                                     command=self.choose_output_folder,
@@ -56,6 +59,19 @@ class XmlConfig(CTk):
 
         self.progressbar = ProgressBarBase(master=self.frame,
                                            mode="indeterminate")
+
+    @staticmethod
+    def get_longest(arr : Iterable) -> Any:
+        """
+        looks through the provided array and returns the item with the longest length
+        :param arr: iterable to look through
+        :return: item from iterable
+        """
+        max_len=max(len(item) for item in arr)
+        for item in arr:
+            if len(item) == max_len:
+                return item
+        return 'm'
 
     def frame_setup(self):
         self.frame.grid(row=0, column=0, sticky="nsew")
