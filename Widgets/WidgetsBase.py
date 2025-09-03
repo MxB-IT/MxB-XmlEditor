@@ -1,6 +1,6 @@
 from customtkinter import *
 from typing import *
 from tkinter import *
-MXB_RED = "#703230"
-DARK_MXB_RED = "#401c1b"
-LIGHT_MXB_RED = "#ffb3b3"
+MXB_RED = "#b34f4c"
+DARK_MXB_RED = "#883c3a"
+DARKER_MXB_RED = '#5b2826'

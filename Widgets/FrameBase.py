@@ -6,7 +6,7 @@ class FrameBase(CTkFrame):
                  master,
                  fg_color = "white",
                  border_color = MXB_RED,
-                 border_width = 2,
+                 border_width = 3,
                  **kwargs):
         super().__init__(*args,
                          master,
