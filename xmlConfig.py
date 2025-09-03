@@ -44,7 +44,8 @@ class XmlConfig(CTk):
                                                     command=self.choose_output_folder,
                                                     text="Zvolit složku pro uložení výsledného souboru"),
                                          LabelBase(master=self.frame,
-                                                   text=f"Složka pro uložení výsledného souboru: {str(self.output_directory.split(self.get_separator(self.output_directory))[-1])}"))
+                                                   text=f"Složka pro uložení výsledného souboru: {str(self.output_directory.split(self.get_separator(self.output_directory))[-1])}",
+                                                   text_color ="green"))
         self.widgets.append(self.output_directory_widgets)
         self.invoker = (ButtonBase(master=self.frame,
                                    command=self.threaded_invocation,
@@ -159,6 +160,8 @@ class XmlConfig(CTk):
         except FileNotFoundError:
             ErrorHandler(error_message="Chyba při načítání výstupní složky",
                          error_code=2).lift()
+            self.output_directory_widgets[1].configure(text=f"Chyba při načítání výstupní složky",
+                                                       text_color="red")
             return
 
     def threaded_invocation(self):
