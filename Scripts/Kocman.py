@@ -7,11 +7,14 @@ def kocman_script(e_tree : ET.ElementTree) -> int or (int, list):
     :return: (int, list) tuple, int representing success and the list containing all the changed elements
     """
 
-    removed_elements = []
+    invoice_counter = 0
 
     #since we are removing certain elements in this function from an xml we know is alright, we automatically use the etree extension
     #we iterate through all the eTree elements
     for element in e_tree.iter():
+
+        if element.tag == 'FaktVyd':
+            invoice_counter += 1
 
         #for each child of an element
         for child in element:
@@ -22,9 +25,6 @@ def kocman_script(e_tree : ET.ElementTree) -> int or (int, list):
                 #if it does, we set up a try except, to detect error states
                 try:
 
-                    removed_xml = ET.tostring(child, encoding="unicode").strip()
-                    removed_elements.append((element.tag, child.tag, removed_xml))
-
                     #clear and remove the child
                     child.clear()
                     element.remove(child)
@@ -32,7 +32,7 @@ def kocman_script(e_tree : ET.ElementTree) -> int or (int, list):
                 #if an error occurs during child deletion, return false, sending the caller into an error state
                 except Exception:
 
-                    return 1, removed_elements
+                    return 1, invoice_counter
 
     #if everything went through ok, return True, let the caller move on
-    return 0, removed_elements
+    return 0, invoice_counter

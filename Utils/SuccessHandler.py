@@ -4,7 +4,7 @@ from Widgets.FrameBase import *
 from Widgets.TextBoxBase import *
 
 class SuccessHandler(CTkToplevel):
-    def __init__(self, text_to_display):
+    def __init__(self, invoice_amt):
         super().__init__()
         self.title("Úspěch")
         self.frame = FrameBase(master=self)
@@ -12,16 +12,8 @@ class SuccessHandler(CTkToplevel):
         self.widgets=list()
         self.label=LabelBase(master=self.frame,
                              text=f"XML soubor úspěšně zpracován\n"
-                                  f"Upraveny/odstraněny byly tyto řádky (celkem {len(text_to_display)}):")
+                                  f"Upraveno bylo celkem {invoice_amt} faktur):")
         self.widgets.append(self.label)
-        self.textbox = TextBoxBase(master=self.frame,
-                                   text_color="white",
-                                   wrap="none")
-        self.widgets.append(self.textbox)
-        for line in text_to_display:
-            self.textbox.insert(index=END,
-                                text=f"{line}\n")
-        self.textbox.configure(state=DISABLED)
         self.button=ButtonBase(master=self.frame,
                                command=self.destroy,
                                text="OK")
