@@ -1,9 +1,6 @@
-import os
 import threading
 from datetime import *
-
-from pywin.Demos import progressbar
-
+from Utils.ResourceFinder import ResourceFinder
 from Widgets.ComboBoxBase import *
 from Utils.ErrorHandler import *
 from Utils.SuccessHandler import *
@@ -21,6 +18,9 @@ class XmlConfig(CTk):
 
         self.file_data = None
         self.output_directory = os.getcwd()
+
+        icon_path = ResourceFinder.resource_path('xmlIcon.ico')
+        self.iconbitmap(bitmap=icon_path)
 
         self.title("XML Config")
         self.frame = FrameBase(master=self)
