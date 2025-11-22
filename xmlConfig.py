@@ -8,6 +8,7 @@ from xml.etree import ElementTree
 from Scripts.Kocman import *
 from Scripts.removeAmpersand import *
 from Widgets.ProgressBar import *
+from PIL import Image, ImageTk
 
 class XmlConfig(CTk):
     def __init__(self):
@@ -20,6 +21,7 @@ class XmlConfig(CTk):
         self.output_directory = os.getcwd()
 
         icon_path = ResourceFinder.resource_path('xmlIcon.ico')
+
         self.iconbitmap(bitmap=icon_path)
 
         self.title("XML Config")

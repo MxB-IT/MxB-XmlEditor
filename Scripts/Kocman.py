@@ -13,8 +13,28 @@ def kocman_script(e_tree : ET.ElementTree) -> int or (int, list):
     #we iterate through all the eTree elements
     for element in e_tree.iter():
 
-        if element.tag == 'FaktVyd':
-            invoice_counter += 1
+        #match case for element tags since a few more operations are required as per new instructions
+        match(element.tag):
+            case 'FaktVyd':
+                invoice_counter += 1
+
+            case 'Ucet':
+                match element.text:
+                    case "HOTOVĚ!":
+                        element.text = 'POK'
+
+                    case 'PP':
+                        element.text = 'BAN'
+
+                    case _:
+                        pass
+
+            case 'KodDPH':
+                if element.text == 'U-ZDANPLN':
+                    element.text = '19Ř01,02'
+
+            case _:
+                pass
 
         #for each child of an element
         for child in element:
