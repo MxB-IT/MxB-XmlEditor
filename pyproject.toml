@@ -1,0 +1,44 @@
+[project]
+name = "xml_editor"
+version = "0.1.0"
+description = "An app meant to be utilised by the MxB corporation for correcting mangled XML files."
+readme = "README.md"
+authors = [
+    { name = "Tadeas Topinka", email = "tadeas.topinka@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "customtkinter>=6.0.0",
+    "defusedxml>=0.7.1",
+    "pydantic>=2.13.4",
+]
+
+[project.scripts]
+xmleditor = "xml_editor:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+src = ["src"]
+line-length = 121
+target-version = "py314"
+show-fixes = true
+output-format = "full"
+
+[tool.ruff.lint]
+select = [
+    "ALL"
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+docstring-code-line-length = 79
+
+[[tool.mypy.overrides]]
+module = "customtkinter.*"
+ignore_missing_imports = true
+
